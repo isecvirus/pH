@@ -23,16 +23,19 @@ min_scan_range = 0
 max_scan_range = 255
 
 
-def Scanner(add_module_to, scanner_action_menu: Menu):
+def Scanner():
     dbg("Loading scanner..", INFO)
 
     scan_found = Label(text="SCANNER")
 
-    scan_frame = LabelFrame(text="SCANNER", labelwidget=scan_found)
-    scan_frame.pack(side='left', fill='both', expand=True, padx=5, pady=5)
-    add_module_to.add(scan_frame)
+    menubar = Menu(tearoff=False)
+    scanner_menu = Menu(tearoff=False)
+    menubar.add_cascade(label="Scanner", menu=scanner_menu)
 
-    interactions_frame = Frame(scan_frame)
+    window = Toplevel()
+    window.title("Scanner")
+
+    interactions_frame = Frame(window)
     interactions_frame.pack(side='bottom', fill='x', padx=5, pady=5)
 
     scan_btn = Button(interactions_frame, text="scan", takefocus=False, cursor='hand2')
@@ -85,7 +88,7 @@ def Scanner(add_module_to, scanner_action_menu: Menu):
     clear_btn.pack(side='left', fill='x')
     ToolTip(clear_btn, "Delete all found clients !PERMANENTLY!")
 
-    table_frame = Frame(scan_frame)
+    table_frame = Frame(window)
     table_frame.pack(side='bottom', fill='both', expand=True, padx=5, pady=5)
 
     scan_result_SBY = Scrollbar(table_frame, orient="vertical")
@@ -138,7 +141,7 @@ def Scanner(add_module_to, scanner_action_menu: Menu):
 
             dbg(f"Start scan operation <{scan_fromVar.get()}-{scan_toVar.get()}:{packet_timeoutVar.get()}>..", WARNING)
             scan_btn.config(state="disabled", cursor="", text="Scanning..")
-            scanner_action_menu.entryconfigure(index=0, state="disabled", label="Scanning..")
+            scanner_menu.entryconfigure(index=0, state="disabled", label="Scanning..")
 
             scan_table.delete(*scan_table.get_children())
 
@@ -165,14 +168,17 @@ def Scanner(add_module_to, scanner_action_menu: Menu):
                 threading.Thread(target=get_client, args=(ip,)).start()
 
             scan_btn.config(state="normal", cursor="hand2", text="scan")
-            scanner_action_menu.entryconfigure(index=0, state="normal", label="scan")
+            scanner_menu.entryconfigure(index=0, state="normal", label="scan")
             scan_from.config(state="normal")
             scan_to.config(state="normal")
 
     scan_btn.config(command=lambda: threading.Thread(target=Start_Scan).start())
 
-    scanner_action_menu.add_command(label="scan", command=lambda: threading.Thread(target=Start_Scan).start())
-    scanner_action_menu.add_command(label="export", command=lambda: Export())
-    scanner_action_menu.add_command(label="clear", command=lambda: scan_table.delete(*scan_table.get_children()))
-    scanner_action_menu.add_checkbutton(label="browse", variable=scan_BrowseVar)
+    scanner_menu.add_command(label="scan", command=lambda: threading.Thread(target=Start_Scan).start())
+    scanner_menu.add_command(label="export", command=lambda: Export())
+    scanner_menu.add_command(label="clear", command=lambda: scan_table.delete(*scan_table.get_children()))
+    scanner_menu.add_checkbutton(label="browse", variable=scan_BrowseVar)
     dbg("Scanner loaded.", SUCCESS)
+
+    window.config(menu=menubar)
+    window.mainloop()

@@ -18,5 +18,15 @@ sniff_table_columns = {
             "width": 150,
             "stretch": True,
             "align": "center"
+        },
+        "DATE": {
+            "width": 150,
+            "stretch": False,
+            "align": "center"
+        },
+        "TIME": {
+            "width": 150,
+            "stretch": False,
+            "align": "center"
         }
     }

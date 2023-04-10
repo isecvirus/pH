@@ -25,24 +25,27 @@ from utils.tooltip import ToolTip
 cutted = {}
 cutter_id_len = 25
 
-def Cutter(add_module_to, cutter_action_menu:Menu):
+def Cutter():
     dbg("Loading cutter..", INFO)
 
-    cut_frame = LabelFrame(text="CUTTER")
-    cut_frame.pack(side='left', expand=True, fill='both', padx=5, pady=5)
-    add_module_to.add(cut_frame)
+    window = Toplevel()
+    window.title("Cutter")
+
+    menubar = Menu(tearoff=False)
+    cutter_menu = Menu(tearoff=False)
+    menubar.add_cascade(label="Scanner", menu=cutter_menu)
 
     def Accept_OR_Drop():
         if accept_dropVar.get():
             dbg("Cutter set to '%s'" % "Accept", SUCCESS)
             accept_drop.config(text="ACCEPT", highlightbackground="green", selectcolor="green")
-            cutter_action_menu.entryconfigure(index=1, background="green", label="ACCEPT")
+            cutter_menu.entryconfigure(index=1, background="green", label="ACCEPT")
         else:
             dbg("Cutter set to '%s'" % "Drop", SUCCESS)
             accept_drop.config(text="DROP", highlightbackground="red", background="red")
-            cutter_action_menu.entryconfigure(index=1, background="red", label="DROP")
+            cutter_menu.entryconfigure(index=1, background="red", label="DROP")
 
-    interactions_frame = Frame(cut_frame)
+    interactions_frame = Frame(window)
     interactions_frame.pack(side='bottom', fill='x', padx=5, pady=5)
 
     start = Button(interactions_frame, text="start", cursor='hand2', takefocus=False)
@@ -83,7 +86,7 @@ def Cutter(add_module_to, cutter_action_menu:Menu):
     browse_result.pack(side='left', padx=5)
     ToolTip(browse_result, "Allow browsing packets while running.")
 
-    table_frame = Frame(cut_frame)
+    table_frame = Frame(window)
     table_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
     search = Entry(table_frame, takefocus=False, cursor="xterm", background="cyan")
@@ -196,19 +199,22 @@ def Cutter(add_module_to, cutter_action_menu:Menu):
         try:
             dbg("Starting cutter..", INFO)
             queue.bind(queue_num=0, user_callback=process_packet, mode=COPY_PACKET)
-            threading.Thread(target=queue.run, ).start()
+            threading.Thread(target=queue.run, daemon=True).start()
             start.config(state='disabled', cursor='')
-            cutter_action_menu.entryconfigure(index=0, state="disabled")
+            cutter_menu.entryconfigure(index=0, state="disabled")
             dbg("Cutter started!", SUCCESS)
         except Exception as error:
             dbg(error, ERROR)
 
     start.config(command=lambda: RUN())
-    cutter_action_menu.add_command(label="start", command=lambda: RUN())
-    cutter_action_menu.add_checkbutton(label="ACCEPT", background="green", command=lambda: Accept_OR_Drop(),
+    cutter_menu.add_command(label="start", command=lambda: RUN())
+    cutter_menu.add_checkbutton(label="ACCEPT", background="green", command=lambda: Accept_OR_Drop(),
                                        variable=accept_dropVar, indicatoron=False)
-    cutter_action_menu.add_checkbutton(label="browse", variable=browse_resultVar)
-    cutter_action_menu.add_command(label="export", command=lambda: Export())
-    cutter_action_menu.add_command(label="clear", command=lambda: cut_table.delete(*cut_table.get_children()))
+    cutter_menu.add_checkbutton(label="browse", variable=browse_resultVar)
+    cutter_menu.add_command(label="export", command=lambda: Export())
+    cutter_menu.add_command(label="clear", command=lambda: cut_table.delete(*cut_table.get_children()))
 
     dbg("Cutter loaded.", SUCCESS)
+    window.config(menu=menubar)
+
+    window.mainloop()

@@ -22,26 +22,29 @@ spoofed = {}
 spoofer_delay = 2
 spoofer_packets = 2
 
-def Spoofer(add_module_to, spoofer_action_menu:Menu):
+def Spoofer():
     dbg("Loading spoofer..", INFO)
 
-    spoof_frame = LabelFrame(text="SPOOFER")
-    spoof_frame.pack(side='right', fill='both', expand=True, padx=5, pady=5)
-    add_module_to.add(spoof_frame)
+    window = Toplevel()
+    window.title("Spoofer")
 
-    interactions_frame = Frame(spoof_frame)
+    menubar = Menu(tearoff=False)
+    spoofer_menu = Menu(tearoff=False)
+    menubar.add_cascade(label="Spoofer", menu=spoofer_menu)
+
+    interactions_frame = Frame(window)
     interactions_frame.pack(side='bottom', fill='x', padx=5, pady=5)
 
     Label(interactions_frame, text="TARGET (SOURCE):", foreground="red").pack(padx=3, side='left')
 
-    register_ip_src = add_module_to.register(IP_VALIDATOR)
+    register_ip_src = window.register(IP_VALIDATOR)
     new_src_ip = Entry(interactions_frame, validate="key", validatecommand=(register_ip_src, '%P'), background="cyan",
                        foreground="black")
     ToolTip(new_src_ip, "Packet source [SRC]~[DST].")
     new_src_ip.pack(side='left', expand=True, fill='x')
     Label(interactions_frame, text="GATEWAY (DESTINATION):", foreground="red").pack(padx=3, side='left')
 
-    register_ip_dest = add_module_to.register(IP_VALIDATOR)
+    register_ip_dest = window.register(IP_VALIDATOR)
     new_dest_ip = Entry(interactions_frame, validate="key", validatecommand=(register_ip_dest, '%P'), background="cyan",
                         foreground="black")
     ToolTip(new_dest_ip, "Packet destination [DST]~[SRC].")
@@ -50,9 +53,9 @@ def Spoofer(add_module_to, spoofer_action_menu:Menu):
     add_btn = Button(interactions_frame, text="Add", cursor="hand2", takefocus=False, command=lambda: Add(table=spoof_table, source=new_src_ip, destination=new_dest_ip, data=spoofed, start_symbol=start_sym))
     add_btn.pack(side='left', padx=5, pady=5, fill='x')
     ToolTip(add_btn, "Add new target client to tables.")
-    spoofer_action_menu.add_command(label="add", command=lambda: Add(table=spoof_table, source=new_src_ip, destination=new_dest_ip, data=spoofed, start_symbol=start_sym))
+    spoofer_menu.add_command(label="add", command=lambda: Add(table=spoof_table, source=new_src_ip, destination=new_dest_ip, data=spoofed, start_symbol=start_sym))
 
-    table_frame = Frame(spoof_frame)
+    table_frame = Frame(window)
     table_frame.pack(side='bottom', fill='both', expand=True, padx=5, pady=5)
 
     spoof_result_SBY = Scrollbar(table_frame, orient="vertical")
@@ -165,3 +168,6 @@ def Spoofer(add_module_to, spoofer_action_menu:Menu):
     Headers(table=spoof_table, headers=spoof_table_columns)
 
     dbg(f"{SPOOFER} loaded.", SUCCESS)
+
+    window.config(menu=menubar)
+    window.mainloop()

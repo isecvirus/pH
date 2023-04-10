@@ -1,8 +1,9 @@
+import datetime
 import threading
-from tkinter import *
+from tkinter import Listbox, Toplevel, BooleanVar, StringVar, Menu
+from tkinter.ttk import *
 from tkinter.filedialog import asksaveasfilename
 from tkinter.scrolledtext import ScrolledText
-from tkinter.ttk import Treeview, Combobox
 import scapy.all as scapy
 import scapy.layers.http
 import netifaces
@@ -11,6 +12,7 @@ import pyperclip
 from scapy.layers.inet import TCP
 from scapy.packet import Raw
 from scapy.sendrecv import sniff
+
 from sniffer.columns import sniff_table_columns
 from sniffer.keywords import default_keywords, Delete_keyword, LoadFromFile, Add_keyword
 from sniffer.get_url import get_url
@@ -41,8 +43,14 @@ def Sniffer(add_module_to, sniffer_action_menu: Menu):
     start_sniff.pack(side='left', padx=5)
     ToolTip(start_sniff, "Start sniffing packets.")
 
-    keywords_frame = LabelFrame(sniff_frame, text="keywords")
-    keywords_frame.pack(side='right', fill='both')
+    right_frame = Panedwindow(sniff_frame)
+    right_frame.pack(side='right', fill='both')
+
+    keywords_frame = LabelFrame(text="keywords")
+    keywords_frame.pack(side='top', fill='both')
+    right_frame.add(keywords_frame)
+
+
     keywords_actions_frame = Frame(keywords_frame)
     keywords_actions_frame.pack(side='bottom', fill='x', padx=5, pady=5)
 
@@ -53,14 +61,14 @@ def Sniffer(add_module_to, sniffer_action_menu: Menu):
     inner_keywords_frame = Frame(keywords_frame)
     inner_keywords_frame.pack(fill='both', expand=True)
 
+
     keywords_SBY = Scrollbar(inner_keywords_frame, orient="vertical")
     keywords_SBX = Scrollbar(inner_keywords_frame, orient="horizontal")
     keywords_SBY.pack(side='right', fill='y')
 
     keywords_SBX.pack(side='bottom', fill='x')
 
-    keywords = Listbox(inner_keywords_frame, takefocus=False, justify="center", selectmode="single",
-                       yscrollcommand=keywords_SBY.set, xscrollcommand=keywords_SBX.set)
+    keywords = Listbox(inner_keywords_frame, takefocus=False, justify="center", selectmode="single", yscrollcommand=keywords_SBY.set, xscrollcommand=keywords_SBX.set)
     keywords.pack(fill='both', expand=True)
 
     keywords_SBY.config(command=keywords.yview)
@@ -68,6 +76,10 @@ def Sniffer(add_module_to, sniffer_action_menu: Menu):
 
     keywords.bind("<BackSpace>", lambda a: Delete_keyword(List=keywords))
     keywords.bind("<Delete>", lambda a: Delete_keyword(List=keywords))
+
+    # injector_frame = Injector()
+    # right_frame.add(injector_frame)
+
 
     for dk in default_keywords:
         dbg("Added '%s' as a keywords for sniffer." % dk, SUCCESS)
@@ -233,7 +245,9 @@ def Sniffer(add_module_to, sniffer_action_menu: Menu):
             index = str(len(sniff_table.get_children()) + 1)
             url = url.decode(errors="replace")
             if f in str(url):
-                sniff_table.insert(parent='', index='end', values=(index, rand, "URL", url))
+                t = datetime.datetime.now().strftime("%I:%M:%S %p")
+                d = datetime.datetime.now().strftime("%Y/%m/%d")
+                sniff_table.insert(parent='', index='end', values=(index, rand, "URL", url, d, t))
 
                 sniffed[rand] = packet[scapy.layers.http.HTTPRequest]  # rp=raw packet
 
@@ -241,7 +255,9 @@ def Sniffer(add_module_to, sniffer_action_menu: Menu):
             if credentials and f in str(credentials):
                 rand = randomize.id(sniffer_id_len)
                 sniffed[rand] = packet[scapy.layers.http.HTTPRequest]  # rp=raw packet
-                sniff_table.insert(parent='', index='end', values=(index, rand, "CREDS", credentials), tags="creds")
+                t = datetime.datetime.now().strftime("%I:%M:%S %p")
+                d = datetime.datetime.now().strftime("%Y/%m/%d")
+                sniff_table.insert(parent='', index='end', values=(index, rand, "CREDS", credentials, d, t), tags="creds")
 
             FocusLast(table=sniff_table, var=browse_resultVar)
         elif packet.haslayer(DNSQR):
@@ -249,7 +265,9 @@ def Sniffer(add_module_to, sniffer_action_menu: Menu):
             index = str(len(sniff_table.get_children()) + 1)
             rand = randomize.id(sniffer_id_len)
             if f in url:
-                sniff_table.insert(parent='', index='end', values=(index, rand, "DNS", url), tags="dns")
+                t = datetime.datetime.now().strftime("%I:%M:%S %p")
+                d = datetime.datetime.now().strftime("%Y/%m/%d")
+                sniff_table.insert(parent='', index='end', values=(index, rand, "DNS", url, d, t), tags="dns")
                 sniffed[rand] = packet[DNSQR]
 
             FocusLast(table=sniff_table, var=browse_resultVar)
