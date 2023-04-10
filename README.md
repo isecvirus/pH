@@ -1,5 +1,5 @@
 ![logo](logo/phunter.png)
-# PacS
+# pH (Packets Hunter)
 Network hacking tool
 
 
